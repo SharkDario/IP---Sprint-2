@@ -1,5 +1,6 @@
 package com.mindhub.todolist.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mindhub.todolist.models.EntityUser;
 
 import java.util.List;
@@ -9,6 +10,8 @@ public class EntityUserDTO {
     // attributes from the class
     // only the ones we want to see (Not password for example)
     // final = constant (doesn't change)
+    // @JsonProperty - id in the response but not in the petition
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private final Long id;
 
     private String username, email;

@@ -14,7 +14,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Task findByTitle(String title);
     Task findByDescription(String description);
     Task findByUser(EntityUser user);
-    List<Task> findAllByUser(EntityUser user);
+    List<Task> findByUserId(Long userId);
 
     boolean existsById(long id);
     boolean existsByTitle(String title);

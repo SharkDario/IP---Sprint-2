@@ -2,11 +2,16 @@ package com.mindhub.todolist.services.impl;
 
 import com.mindhub.todolist.dtos.EntityUserDTO;
 import com.mindhub.todolist.dtos.NewEntityUser;
+import com.mindhub.todolist.dtos.UpdateEntityUserPasswordDTO;
+import com.mindhub.todolist.dtos.UpdateEntityUserUsernameEmailDTO;
 import com.mindhub.todolist.models.EntityUser;
 import com.mindhub.todolist.repositories.EntityUserRepository;
 import com.mindhub.todolist.services.EntityUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 // with @Service the implementation is in the context of Spring Boot
 // and a component
@@ -22,7 +27,8 @@ public class EntityUserServiceImpl implements EntityUserService {
 
     @Override
     public EntityUser getEntityUserById(Long id) {
-        return entityUserRepository.findById(id).orElse(null);
+        return entityUserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User with ID " + id + " not found"));
     }
 
     @Override
@@ -33,12 +39,80 @@ public class EntityUserServiceImpl implements EntityUserService {
 
     @Override
     public void createNewEntityUser(NewEntityUser newEntityUser) {
-        // if returns an exception or not: validateEntityUser(newEntityUser);
+        validateEntityUser(newEntityUser);
         EntityUser entityUser = new EntityUser(newEntityUser.username(), newEntityUser.password(), newEntityUser.email());
         saveEntityUser(entityUser);
     }
 
     public void validateEntityUser(NewEntityUser newEntityUser) {
+        // Validate unique email
+        if (entityUserRepository.existsByEmail(newEntityUser.email())) {
+            throw new IllegalArgumentException("The email " + newEntityUser.email() + " is already in use.");
+        }
+        // Validate unique username
+        if (entityUserRepository.existsByUsername(newEntityUser.username())) {
+            throw new IllegalArgumentException("The username " + newEntityUser.username() + " is already in use.");
+        }
+    }
 
+    public List<EntityUserDTO> getAllEntityUsers() {
+        return entityUserRepository.findAll().stream()
+                .map(EntityUserDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public boolean existsByEmail(String email) {
+        return entityUserRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public boolean updateEntityUserUsernameEmail(Long id, UpdateEntityUserUsernameEmailDTO updatedEntityUser) {
+        EntityUser entityUser = getEntityUserById(id);
+        // Validate unique email and username
+        if(!updatedEntityUser.email().equals(entityUser.getEmail()) &&
+            entityUserRepository.existsByEmailAndIdNot(updatedEntityUser.email(), id)) {
+            throw new IllegalArgumentException("The email " + updatedEntityUser.email() + " is already in use.");
+        }
+        if(!updatedEntityUser.username().equals(entityUser.getUsername()) &&
+            entityUserRepository.existsByUsernameAndIdNot(updatedEntityUser.username(), id)) {
+            throw new IllegalArgumentException("The username " + updatedEntityUser.username() + " is already in use.");
+        }
+        // Update the user
+        entityUser.setUsername(updatedEntityUser.username());
+        entityUser.setEmail(updatedEntityUser.email());
+        entityUserRepository.save(entityUser);
+        return true;
+    }
+
+    @Override
+    public boolean updateEntityUserPassword(Long id, UpdateEntityUserPasswordDTO updatedPassword) {
+        EntityUser entityUser = getEntityUserById(id);
+        // Validate the password
+        if (!entityUser.getPassword().equals(updatedPassword.oldPassword())) {
+            throw new IllegalArgumentException("Current password " + updatedPassword.oldPassword() + " is incorrect.");
+        }
+
+        entityUser.setPassword(updatedPassword.newPassword());
+        entityUserRepository.save(entityUser);
+        return true;
+    }
+    /* public boolean updateEntityUser(Long id, EntityUserDTO updatedUser) {
+        EntityUser entityUser = entityUserRepository.findById(id).orElse(null);
+        if (entityUser == null) {
+            return false;
+        }
+        entityUser.setUsername(updatedUser.getUsername());
+        //entityUser.setPassword(updatedUser.getPassword());
+        entityUser.setEmail(updatedUser.getEmail());
+        entityUserRepository.save(entityUser);
+        return true;
+    }*/
+
+    public boolean deleteEntityUser(Long id) {
+        if (!entityUserRepository.existsById(id)) {
+            return false;
+        }
+        entityUserRepository.deleteById(id);
+        return true;
     }
 }

@@ -37,7 +37,7 @@ public class EntityUser {
         this.password = password;
         this.email = email;
     }
-    // Empty Constructor
+    // Empty Constructor - Parsing the object
     public EntityUser() {}
 
     public Long getId() {

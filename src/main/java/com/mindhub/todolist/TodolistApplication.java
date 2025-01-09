@@ -36,7 +36,7 @@ public class TodolistApplication {
 			// "Finds" in EntityUserRepository
 			EntityUser user2 = entityUserRepository.findById(1l).orElse(null);
 			System.out.println(user2);
-			user2 = entityUserRepository.findByEmail("mdarioc1998@gmail.com");
+			//user2 = entityUserRepository.findByEmail("mdarioc1998@gmail.com");
 			System.out.println(user2);
 			user2 = entityUserRepository.findByUsername("Dario7");
 			System.out.println(user2);
@@ -47,7 +47,7 @@ public class TodolistApplication {
 			// User that doesn't exist
 			user2 = entityUserRepository.findById(2l).orElse(null);
 			System.out.println(user2);
-			user2 = entityUserRepository.findByEmail("test@gmail.com");
+			//user2 = entityUserRepository.findByEmail("test@gmail.com");
 			System.out.println(user2);
 			user2 = entityUserRepository.findByUsername("Test7");
 			System.out.println(user2);

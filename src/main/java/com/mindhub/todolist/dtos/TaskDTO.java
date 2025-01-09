@@ -1,15 +1,21 @@
 package com.mindhub.todolist.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mindhub.todolist.models.EntityUser;
 import com.mindhub.todolist.models.Task;
 import com.mindhub.todolist.models.TaskStatus;
 
 public class TaskDTO {
-
+    // @JsonProperty - id in the response but not in the petition (to not use @JsonIgnore)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     private String title, description;
 
     private TaskStatus status;
+
+    //private EntityUser user;
 
     // Constructor
     public TaskDTO(Task task) {
@@ -17,6 +23,10 @@ public class TaskDTO {
         title = task.getTitle();
         description = task.getDescription();
         status = task.getStatus();
+    }
+
+    // Empty Constructor
+    public TaskDTO() {
     }
 
     // Generate only the getters
@@ -37,4 +47,6 @@ public class TaskDTO {
     public String getDescription() {
         return description;
     }
+
+    //public EntityUser getUser() { return user; }
 }
