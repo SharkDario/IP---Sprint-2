@@ -19,7 +19,9 @@ public interface TaskService {
 
     void createNewTask(Long userId, NewTask newTask);
 
-    public List<TaskDTO> getAllTasks(Long userId);
+    public List<TaskDTO> getAllTasksById(Long userId);
+
+    public List<TaskDTO> getAllTasks();
 
     void deleteTaskById(Long id);
 

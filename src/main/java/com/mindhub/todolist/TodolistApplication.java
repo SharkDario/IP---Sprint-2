@@ -23,7 +23,8 @@ public class TodolistApplication {
 	@Bean
 	public CommandLineRunner initData(EntityUserRepository entityUserRepository, TaskRepository taskRepository) {
 		return args -> {
-			EntityUser user = new EntityUser("Dario7", "01234", "mdarioc1998@gmail.com");
+			// password need to be at least 8 characters
+			EntityUser user = new EntityUser("Dario7", "12345678", "mdarioc1998@gmail.com");
 			// ID = null because the user isn't saved
 			//System.out.println(user.toString());
 			// Always verify the order in the saves
@@ -40,7 +41,7 @@ public class TodolistApplication {
 			System.out.println(user2);
 			user2 = entityUserRepository.findByUsername("Dario7");
 			System.out.println(user2);
-			user2 = entityUserRepository.findByUsernameAndPassword("Dario7", "01234");
+			user2 = entityUserRepository.findByUsernameAndPassword("Dario7", "12345678");
 			// "Exists"
 			// "Count"
 

@@ -5,14 +5,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mindhub.todolist.models.EntityUser;
 import com.mindhub.todolist.models.Task;
 import com.mindhub.todolist.models.TaskStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class TaskDTO {
     // @JsonProperty - id in the response but not in the petition (to not use @JsonIgnore)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    private String title, description;
+    @NotBlank(message = "Title is required")
+    private String title;
 
+    @NotBlank(message = "Description is required")
+    private String description;
+
+    @NotNull(message = "Task status is required and cannot be null")
     private TaskStatus status;
 
     //private EntityUser user;

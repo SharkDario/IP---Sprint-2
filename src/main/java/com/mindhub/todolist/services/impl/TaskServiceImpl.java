@@ -1,5 +1,6 @@
 package com.mindhub.todolist.services.impl;
 
+import com.mindhub.todolist.dtos.EntityUserDTO;
 import com.mindhub.todolist.dtos.NewTask;
 import com.mindhub.todolist.dtos.TaskDTO;
 import com.mindhub.todolist.models.EntityUser;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -48,9 +50,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDTO> getAllTasks(Long userId) {
+    public List<TaskDTO> getAllTasksById(Long userId) {
         List<Task> tasks = taskRepository.findByUserId(userId);
         return tasks.stream().map(TaskDTO::new).toList();
+    }
+
+    @Override
+    public List<TaskDTO> getAllTasks() {
+        return taskRepository.findAll().stream()
+                .map(TaskDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Override
