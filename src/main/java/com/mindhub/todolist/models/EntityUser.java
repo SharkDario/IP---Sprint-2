@@ -1,9 +1,15 @@
 package com.mindhub.todolist.models;
 
-import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 // Table in the DB
 @Entity
@@ -19,6 +25,8 @@ public class EntityUser {
 
     @Column(unique = true)
     private String email;
+
+    private RoleType role = RoleType.USER;
 
     // mappedBy points to the attribute "user" in Task
     // with Set (instead of List) we have the data without repetitions (happen sometimes with List)
@@ -80,6 +88,14 @@ public class EntityUser {
     public void removeTask(Task task) {
         task.setUser(null); // DB
         tasks.remove(task); // implicit this. - Not save the reference
+    }
+
+    public RoleType getRole() {
+        return role;
+    }
+
+    public void setRole(RoleType role) {
+        this.role = role;
     }
 
     // Polymorphism

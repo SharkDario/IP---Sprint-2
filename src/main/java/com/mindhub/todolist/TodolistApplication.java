@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @SpringBootApplication
@@ -21,10 +22,10 @@ public class TodolistApplication {
 	// Bean: Object that Spring Boot creates from the start of the application
 	// We need to be clear with the names like entityUserRepository
 	@Bean
-	public CommandLineRunner initData(EntityUserRepository entityUserRepository, TaskRepository taskRepository) {
+	public CommandLineRunner initData(EntityUserRepository entityUserRepository, TaskRepository taskRepository, PasswordEncoder passwordEncoder) {
 		return args -> {
 			// password need to be at least 8 characters
-			EntityUser user = new EntityUser("Dario7", "12345678", "mdarioc1998@gmail.com");
+			EntityUser user = new EntityUser("Dario7", passwordEncoder.encode("12345678"), "mdarioc1998@gmail.com");
 			// ID = null because the user isn't saved
 			//System.out.println(user.toString());
 			// Always verify the order in the saves
