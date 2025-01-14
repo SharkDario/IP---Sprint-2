@@ -11,18 +11,18 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 // Doesn't use entities in controllers (not receive nor send)
 // We use DTO to receive and send in controllers
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/user") //@PreAuthorize("hasRole('USER')")
 public class EntityUserController { // This class also in the context of Spring Boot (has to be Component)
     // Dependencies Injection - Only things that are in the context of Spring Boot (has to be Component)
     // From behind generates a constructor and injects the bean for this repository (interface)
@@ -30,6 +30,11 @@ public class EntityUserController { // This class also in the context of Spring 
     private EntityUserService entityUserService; // inject the interface directly
     // after make the Implementation this is no longer needed
     //private EntityUserRepository entityUserRepository;
+
+    private Long getAuthenticatedUserId(Authentication authentication) {
+        EntityUserDTO user = entityUserService.getEntityUserDTOByEmail(authentication.getName());
+        return user.getId();
+    }
 
     // Validate errors
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -61,31 +66,29 @@ public class EntityUserController { // This class also in the context of Spring 
         return error;
     }
 
-    // List all users
-    @Operation(summary = "Get all users", description = "Return the information about all users")
+    // if the user is authenticated: shows me the email
+    @Operation(summary = "Get user's email (logged in)", description = "Return the email about the user authenticated")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Users not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "200", description = "User's email retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User's email not found"),
+            @ApiResponse(responseCode = "401", description = "Without authorization")
     })
-    @GetMapping
-    public ResponseEntity<List<EntityUserDTO>> getAllUsers() {
-        List<EntityUserDTO> users = entityUserService.getAllEntityUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @GetMapping("/email")
+    public String getEmail(Authentication authentication){
+        return authentication.getName();
     }
 
-    // Return a user by id
-    @Operation(summary = "Get a user by ID", description = "Return the information about a user by its ID")
+    // Return a user by authentication
+    @Operation(summary = "Get user's information (logged in)", description = "Return the information about the user authenticated")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "401", description = "Without authorization"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
         try {
-            EntityUserDTO user = entityUserService.getEntityUserDTOById(id);
+            EntityUserDTO user = entityUserService.getEntityUserDTOByEmail(getEmail(authentication));
             return new ResponseEntity<>(user, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -94,30 +97,17 @@ public class EntityUserController { // This class also in the context of Spring 
         }
     }
 
-    // Create a user
-    @Operation(summary = "Create a user", description = "Create a new user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User created successfully"),
-            @ApiResponse(responseCode = "404", description = "Invalid input data"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
-    })
-    @PostMapping
-    public ResponseEntity<?> createEntityUser(@Valid @RequestBody NewEntityUser newEntityUser) {
-        entityUserService.createNewEntityUser(newEntityUser);
-        return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
-    }
-
-    // Update Username and Email - User
-    @Operation(summary = "Update user's information", description = "Update a user's username and email")
+    // Update Username and Email from the authenticated user
+    @Operation(summary = "Update user's information (logged in)", description = "Update your username and email")
     @ApiResponses(value={
             @ApiResponse(responseCode = "200", description = "User's username and email updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateEntityUser(@PathVariable Long id, @Valid @RequestBody UpdateEntityUserUsernameEmailDTO updatedUser) {
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(Authentication authentication, @Valid @RequestBody UpdateEntityUserUsernameEmailDTO updatedUser) {
         try {
-            entityUserService.updateEntityUserUsernameEmail(id, updatedUser);
+            entityUserService.updateEntityUserUsernameEmail(getAuthenticatedUserId(authentication), updatedUser);
             return new ResponseEntity<>("User updated successfully", HttpStatus.OK);
         } catch (IllegalArgumentException e) { // always before a RunTimeException that is general
             return new ResponseEntity<>("Invalid data provided: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -126,17 +116,16 @@ public class EntityUserController { // This class also in the context of Spring 
         }
     }
 
-    // Update Password - User
-    @Operation(summary = "Update user's password", description = "Update a user's password")
+    // Update Password from the authenticated user
+    @Operation(summary = "Update user's password (logged in)", description = "Update your password")
     @ApiResponses(value={
-            @ApiResponse(responseCode = "200", description = "User's password updated successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "200", description = "Your password has updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid password")
     })
-    @PutMapping("/{id}/password")
-    public ResponseEntity<?> updatePassword(@PathVariable Long id, @Valid @RequestBody UpdateEntityUserPasswordDTO updatedPassword) {
+    @PutMapping("/profile/password")
+    public ResponseEntity<?> updatePassword(Authentication authentication, @Valid @RequestBody UpdateEntityUserPasswordDTO updatedPassword) {
         try {
-            entityUserService.updateEntityUserPassword(id, updatedPassword);
+            entityUserService.updateEntityUserPassword(getAuthenticatedUserId(authentication), updatedPassword);
             return new ResponseEntity<>("Password updated successfully", HttpStatus.OK);
         } catch (IllegalArgumentException e) { // always before a RunTimeException that is general
             return new ResponseEntity<>("Invalid data provided: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -145,16 +134,16 @@ public class EntityUserController { // This class also in the context of Spring 
         }
     }
 
-    // Delete a user
-    @Operation(summary = "Delete a user", description = "Delete a user by its ID")
+    // Delete the authenticated user
+    @Operation(summary = "Delete user (logged in)", description = "Delete my user that is authenticated")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Invalid input data"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEntityUser(@PathVariable Long id) {
-        boolean deleted = entityUserService.deleteEntityUser(id);
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteEntityUser(Authentication authentication) {
+        boolean deleted = entityUserService.deleteEntityUser(getAuthenticatedUserId(authentication));
         if (!deleted) {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }

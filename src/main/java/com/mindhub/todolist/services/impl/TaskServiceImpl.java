@@ -25,7 +25,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO getTaskDTOById(Long id) {
         return new TaskDTO(getTaskById(id));
     }
-    //orElseThrow. ListBlank verifica q no este vacio y que no sea un espacio en blanco
+    //orElseThrow. ListBlank verify that isn't empty and not a blank space
     @Override
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
@@ -86,5 +86,14 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskById(id);
         taskRepository.delete(task);
         return true;
+    }
+
+    @Override
+    public boolean isTaskOwner(Long taskId, String userEmail) {
+        Task task = getTaskById(taskId);
+        // Get the task owner email
+        String taskOwnerEmail = task.getUser().getEmail();
+        // Compare the emails
+        return taskOwnerEmail.equals(userEmail);
     }
 }
