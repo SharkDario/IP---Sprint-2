@@ -17,8 +17,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 
 import java.util.Arrays;
+
+// @EnableMethodSecurity for the methods: @PreAuthorize @PostAuthorize @Secured @RolesAllowed
 
 // @Configuration indicate to spring boot inside the class SecurityConfig are going to be one or various Beans
 @Configuration
@@ -34,24 +37,29 @@ public class SecurityConfig {
     }
     // Need a bean for being inside the spring's context, spring can create it and leave it ready at the start of the app
     @Bean // a new SecurityFilterChain with our rules in the security
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ContentNegotiatingViewResolver contentNegotiatingViewResolver) throws Exception {
         http //HttpSecurity we use different methods
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for REST APIs
-                .authorizeHttpRequests(authorizeRequests ->
+                .authorizeHttpRequests(authorizeRequests -> // permit the routes by authorities
                         authorizeRequests
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html" ,"/h2-console/**")
                                 .permitAll() // to access to the API and the db when you are in development
                                 .requestMatchers( "/api/auth/**", "/index.html" ).permitAll() // anyone can access to this routes
-                                .requestMatchers("/api/user/**").hasAuthority("USER") // USER can access to these routes **: means all routes from there
+                                .requestMatchers("/api/user/**").hasAuthority("USER")
                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")// Allow public access to specific endpoints
                                 .anyRequest().denyAll() // All other requests must be authenticated
+                ) //.requestMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER can access to these routes **: means all routes from there
+                .headers( // this config for use the h2 console in development, only when you are working with h2 - for use the h2 we have to disable frameOptions
+                        httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin())
                 )
                 .formLogin(AbstractHttpConfigurer::disable) // deactivated the form login
                 .httpBasic(AbstractHttpConfigurer::disable) // deactivated the basic http config
+                //.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
+                //        httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint( ((request, response, authException) -> response.sendError(401)) )) // specific configuration
                 .cors(httpSecurityCorsConfigurer -> corsConfigurationSource()) // config the cors
                 .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // session policy: without state, the session doesn't exist in the server-side, only the token, info about the session
-                ) // add the filter: jwtAuthenticationFilter, personalized
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // session policy: without state, session exist in the client-side, the session doesn't exist in the server-side, only the token, info about the session
+                ) // add the filter: jwtAuthenticationFilter before standard authentication filter, personalized
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Apply JWT filter
 
         return http.build();

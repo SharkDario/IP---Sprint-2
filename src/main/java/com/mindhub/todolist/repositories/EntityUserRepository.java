@@ -1,11 +1,9 @@
 package com.mindhub.todolist.repositories;
 
 import com.mindhub.todolist.models.EntityUser;
-import com.mindhub.todolist.models.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-import java.util.Set;
 
 // <class EntityUser, ID's type
 // @Repository - It's not necessary because JpaRepository already have @Repository from its extensions

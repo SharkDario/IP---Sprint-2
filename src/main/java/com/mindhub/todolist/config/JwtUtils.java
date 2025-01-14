@@ -51,5 +51,5 @@ public class JwtUtils {
 
     private boolean isTokenExpired(String token) {
         return parseClaims(token).getExpiration().before(new Date());
-    }
+    } //parsClaims(token).getExpiration: return the expiration date
 }

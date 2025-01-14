@@ -30,4 +30,6 @@ public interface TaskService {
     public boolean updateTask(Long id, TaskDTO updatedTask);
 
     public boolean deleteTask(Long id);
+
+    boolean isTaskOwner(Long taskId, String userEmail);
 }

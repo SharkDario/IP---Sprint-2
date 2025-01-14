@@ -1,7 +1,10 @@
 package com.mindhub.todolist.controllers;
 
 import com.mindhub.todolist.config.JwtUtils;
+import com.mindhub.todolist.dtos.EntityUserDTO;
+import com.mindhub.todolist.dtos.LoginRequest;
 import com.mindhub.todolist.dtos.NewEntityUser;
+import com.mindhub.todolist.services.EntityUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,12 +24,16 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private JwtUtils jwtUtil;
+    private EntityUserService entityUserService;
 
+    @Autowired
+    private JwtUtils jwtUtil;
+    // SignUp
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody NewEntityUser loginRequest) {
+    public ResponseEntity<String> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        // pass: csrf, authorizedHttpRequests (USER), cors (* any frontend), jwtAuthenticationFilter (doFilterInternal URI, extract Authorization, Extract token, jwlUtils extract subject
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
+                new UsernamePasswordAuthenticationToken(// use the CustomUserDetailsService because is using the UserDetails
                         loginRequest.email(),
                         loginRequest.password()
                 )
@@ -40,4 +47,9 @@ public class AuthController {
     }
 
     // Register
+    @PostMapping("/register")
+    public ResponseEntity<String> registerUser(@RequestBody NewEntityUser registrationDto) {
+        entityUserService.registerUser(registrationDto);
+        return ResponseEntity.ok("User registered successfully");
+    }
 }

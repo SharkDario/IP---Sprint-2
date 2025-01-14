@@ -5,9 +5,11 @@ import com.mindhub.todolist.dtos.NewEntityUser;
 import com.mindhub.todolist.dtos.UpdateEntityUserPasswordDTO;
 import com.mindhub.todolist.dtos.UpdateEntityUserUsernameEmailDTO;
 import com.mindhub.todolist.models.EntityUser;
+import com.mindhub.todolist.models.RoleType;
 import com.mindhub.todolist.repositories.EntityUserRepository;
 import com.mindhub.todolist.services.EntityUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,9 +22,17 @@ public class EntityUserServiceImpl implements EntityUserService {
     @Autowired
     private EntityUserRepository entityUserRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public EntityUserDTO getEntityUserDTOById(Long id) {
         return new EntityUserDTO(getEntityUserById(id));
+    }
+
+    @Override
+    public EntityUserDTO getEntityUserDTOByEmail(String email) {
+        return new EntityUserDTO(getEntityUserByEmail(email));
     }
 
     @Override
@@ -32,15 +42,28 @@ public class EntityUserServiceImpl implements EntityUserService {
     }
 
     @Override
+    public EntityUser getEntityUserByEmail(String email) {
+        return entityUserRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User with email " + email + " not found"));
+    }
+
+    @Override
     public EntityUser saveEntityUser(EntityUser entityUser) {
         //EntityUser entityUser = new EntityUser(newEntityUser.username(), newEntityUser.password(), newEntityUser.email());
         return entityUserRepository.save(entityUser);
     }
 
     @Override
-    public void createNewEntityUser(NewEntityUser newEntityUser) {
+    public void registerAdminUser(NewEntityUser newEntityUser) {
         validateEntityUser(newEntityUser);
-        EntityUser entityUser = new EntityUser(newEntityUser.username(), newEntityUser.password(), newEntityUser.email());
+        EntityUser entityUser = new EntityUser(newEntityUser.username(), passwordEncoder.encode(newEntityUser.password()), newEntityUser.email());
+        entityUser.setRole(RoleType.ADMIN);
+        saveEntityUser(entityUser);
+    }
+
+    public void registerUser(NewEntityUser newEntityUser) {
+        validateEntityUser(newEntityUser);
+        EntityUser entityUser = new EntityUser(newEntityUser.username(), passwordEncoder.encode(newEntityUser.password()), newEntityUser.email());
         saveEntityUser(entityUser);
     }
 
@@ -87,12 +110,13 @@ public class EntityUserServiceImpl implements EntityUserService {
     @Override
     public boolean updateEntityUserPassword(Long id, UpdateEntityUserPasswordDTO updatedPassword) {
         EntityUser entityUser = getEntityUserById(id);
-        // Validate the password
-        if (!entityUser.getPassword().equals(updatedPassword.oldPassword())) {
-            throw new IllegalArgumentException("Current password " + updatedPassword.oldPassword() + " is incorrect.");
+        // passwordEncoder.matches() to validate the old password
+        if (!passwordEncoder.matches(updatedPassword.oldPassword(), entityUser.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
         }
 
-        entityUser.setPassword(updatedPassword.newPassword());
+        // Encode the new password before saving
+        entityUser.setPassword(passwordEncoder.encode(updatedPassword.newPassword()));
         entityUserRepository.save(entityUser);
         return true;
     }

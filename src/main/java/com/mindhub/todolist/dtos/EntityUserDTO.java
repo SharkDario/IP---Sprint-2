@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mindhub.todolist.models.EntityUser;
 
 import java.util.List;
+
+import com.mindhub.todolist.models.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,6 +29,8 @@ public class EntityUserDTO {
 
     private List<TaskDTO> tasks;
 
+    private RoleType role;
+
     // MapStruct: we can use Libraries for mappers (annotation, mapping from an object to another)
     // Package from utils: build it from scratch
 
@@ -40,6 +44,7 @@ public class EntityUserDTO {
                 .stream() // Stream<Task>
                 .map(task -> new TaskDTO(task)) // Stream<TaskDTO> Function Lambda
                 .toList(); // List<TaskDTO>
+        role = entityUser.getRole();
     }
     // .map( TaskDTO::new ) Short form - Function Lambda
     // .map(task -> {
@@ -65,5 +70,9 @@ public class EntityUserDTO {
 
     public List<TaskDTO> getTasks() {
         return tasks;
+    }
+
+    public RoleType getRole() {
+        return role;
     }
 }

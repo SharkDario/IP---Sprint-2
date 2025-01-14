@@ -1,6 +1,7 @@
 package com.mindhub.todolist;
 
 import com.mindhub.todolist.models.EntityUser;
+import com.mindhub.todolist.models.RoleType;
 import com.mindhub.todolist.models.Task;
 import com.mindhub.todolist.models.TaskStatus;
 import com.mindhub.todolist.repositories.EntityUserRepository;
@@ -64,6 +65,22 @@ public class TodolistApplication {
 			System.out.println(task);
 			taskRepository.save(task);
 			System.out.println(task);
+
+			user = new EntityUser("Dario8", passwordEncoder.encode("12345678"), "dario@gmail.com");
+			// ID = null because the user isn't saved
+			//System.out.println(user.toString());
+			// Always verify the order in the saves
+			entityUserRepository.save(user);
+			task = new Task("Sprint 3 - Activity", "Implement Spring Security (ADMIN and USER authorities)", TaskStatus.IN_PROGRESS);
+			// Before save the task we need to add the task to the user
+			user.addTask(task);
+			taskRepository.save(task);
+
+			user = new EntityUser("Shark", passwordEncoder.encode("12345678"), "shark@gmail.com");
+			//admin
+			user.setRole(RoleType.ADMIN);
+			entityUserRepository.save(user);
+
 		};
 	}
 }
