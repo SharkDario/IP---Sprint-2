@@ -22,6 +22,7 @@ public class TodolistApplication {
 
 	// Bean: Object that Spring Boot creates from the start of the application
 	// We need to be clear with the names like entityUserRepository
+	/*
 	@Bean
 	public CommandLineRunner initData(EntityUserRepository entityUserRepository, TaskRepository taskRepository, PasswordEncoder passwordEncoder) {
 		return args -> {
@@ -82,5 +83,8 @@ public class TodolistApplication {
 			entityUserRepository.save(user);
 
 		};
+
 	}
+	 */
+
 }

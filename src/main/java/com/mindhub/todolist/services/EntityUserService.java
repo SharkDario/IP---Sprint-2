@@ -34,4 +34,7 @@ public interface EntityUserService {
     boolean updateEntityUserPassword(Long id, UpdateEntityUserPasswordDTO updatedPassword);
 
     public boolean deleteEntityUser(Long id);
+
+    public void validateEntityUser(NewEntityUser newEntityUser);
+
 }
