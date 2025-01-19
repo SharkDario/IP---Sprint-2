@@ -38,7 +38,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void createNewTask(Long userId, NewTask newTask) {
+    public boolean createNewTask(Long userId, NewTask newTask) {
         EntityUser user = entityUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with ID " + userId + " not found"));
         // Create the task
@@ -47,6 +47,7 @@ public class TaskServiceImpl implements TaskService {
         task.setUser(user);
         // Save the task
         saveTask(task);
+        return true;
     }
 
     @Override

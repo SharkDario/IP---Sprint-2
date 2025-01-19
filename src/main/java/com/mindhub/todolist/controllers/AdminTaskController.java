@@ -132,7 +132,7 @@ public class AdminTaskController {
                 return new ResponseEntity<>("Task created successfully", HttpStatus.CREATED);
             }
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>("You can't create a task for an administrator", HttpStatus.FORBIDDEN);
         }
         return new ResponseEntity<>("Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR);
     }

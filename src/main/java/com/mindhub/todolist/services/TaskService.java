@@ -17,7 +17,7 @@ public interface TaskService {
 
     Task saveTask(Task task);
 
-    void createNewTask(Long userId, NewTask newTask);
+    boolean createNewTask(Long userId, NewTask newTask);
 
     public List<TaskDTO> getAllTasksById(Long userId);
 
