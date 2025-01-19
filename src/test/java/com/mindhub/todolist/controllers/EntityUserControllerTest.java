@@ -107,7 +107,7 @@ public class EntityUserControllerTest {
     @WithMockUser(username = EMAIL)
     void updateProfileInvalidDataShouldReturnBadRequest() throws Exception {
         // Create a DTO with invalid data
-        UpdateEntityUserUsernameEmailDTO updateDto = new UpdateEntityUserUsernameEmailDTO(" ", "invalid-email");
+        UpdateEntityUserUsernameEmailDTO updateDto = new UpdateEntityUserUsernameEmailDTO(null, "invalid-email");
         // Mock the service to throw an exception for invalid data
         when(entityUserService.getEntityUserDTOByEmail(EMAIL)).thenReturn(testUser);
         when(entityUserService.updateEntityUserUsernameEmail(anyLong(), any(UpdateEntityUserUsernameEmailDTO.class)))
