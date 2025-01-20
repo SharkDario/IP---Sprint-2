@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 // This annotation is used for JPA tests, it configures an in-memory database and JPA repositories
 @DataJpaTest
@@ -163,5 +162,36 @@ public class TaskRepositoryTest {
         // Test finding a non-existent task by title
         Task foundTask = taskRepository.findByTitle("Non-existent Task");
         assertThat(foundTask).isNull();
+    }
+
+    @Test
+    public void testCreateNewTask() {
+        Task newTask = new Task();
+        newTask.setTitle("Sprint 4");
+        newTask.setDescription("Testing");
+        newTask.setStatus(TaskStatus.PENDING);
+        Task taskToSave = taskRepository.save(newTask);
+        assertNotNull(taskToSave.getId());
+        assertEquals("Sprint 4", taskToSave.getTitle());
+    }
+
+    @Test
+    public void testUpdateTask() {
+        Task foundTask = taskRepository.findById(task.getId()).orElse(null);
+        assertThat(foundTask).isNotNull();
+
+        foundTask.setTitle("Updated Sprint 4");
+        taskRepository.save(foundTask);
+
+        Task updatedTask = taskRepository.findById(task.getId()).orElse(null);
+        assertThat(updatedTask).isNotNull();
+        assertThat(updatedTask.getTitle()).isEqualTo("Updated Sprint 4");
+    }
+
+    @Test
+    public void testDeleteTask() {
+        taskRepository.deleteById(task.getId());
+        boolean exists = taskRepository.existsById(task.getId());
+        assertFalse(exists);
     }
 }
